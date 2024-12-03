@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../db';
-import '../App.css'; // Ensure you import the CSS file
+import '../App.css'; 
 
 function ContactDetail() {
   const { id } = useParams();
