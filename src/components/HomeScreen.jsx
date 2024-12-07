@@ -1,28 +1,44 @@
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../db';
+import { db } from '../db.js';
 import { Link } from 'react-router-dom';
 import '../App.css';
 
 function HomeScreen() {
   const [contacts, setContacts] = useState([]);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchContacts = async () => {
+      setLoading(true); // Ensure loading is displayed
       try {
         const contactsCollection = collection(db, 'contacts');
         const contactsSnapshot = await getDocs(contactsCollection);
-        const contactsList = contactsSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
 
-        contactsList.sort((a, b) => a.lastName.localeCompare(b.lastName));
+        if (!contactsSnapshot.empty) {
+          const contactsList = contactsSnapshot.docs.map((doc) => ({
+            id: doc.id,
+            firstName: doc.data()['firstName'], // Match Firestore field names
+            lastName: doc.data()['lastname'],
+            email: doc.data()['email'], // Match Firestore field names
+            phoneNumber: doc.data()['phoneNumber'] || 'N/A',
+          }));
 
-        setContacts(contactsList);
+          // Sort contacts by last name
+          contactsList.sort((a, b) =>
+            (a.lastName || '').localeCompare(b.lastName || '')
+          );
+
+          setContacts(contactsList);
+        } else {
+          console.log('No contacts found in Firestore!');
+          setContacts([]);
+        }
       } catch (error) {
-        console.error("Error fetching contacts:", error);
+        console.error('Error fetching contacts from Firestore:', error);
+      } finally {
+        setLoading(false); // Hide loading indicator
       }
     };
 
@@ -30,9 +46,12 @@ function HomeScreen() {
   }, []);
 
   const filteredContacts = contacts.filter((contact) =>
-    contact.firstName.toLowerCase().includes(search.toLowerCase()) ||
-    contact.lastName.toLowerCase().includes(search.toLowerCase())
+    `${contact.firstName} ${contact.lastName}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
   );
+
+  if (loading) return <p>Loading contacts...</p>;
 
   return (
     <div className="container">
@@ -42,6 +61,7 @@ function HomeScreen() {
           + Add Contact
         </Link>
       </div>
+
       <div className="search-box">
         <input
           type="text"
@@ -51,17 +71,23 @@ function HomeScreen() {
           className="search-input"
         />
       </div>
-      <ul className="contact-list">
-        {filteredContacts.map((contact) => (
-          <li key={contact.id} className="contact-item">
-            <Link to={`/contact/${contact.id}`} className="contact-link">
-              {contact.firstName} {contact.lastName}
-            </Link>
-          </li>
-        ))}
-      </ul>
+
+      {filteredContacts.length > 0 ? (
+        <ul className="contact-list">
+          {filteredContacts.map((contact) => (
+            <li key={contact.id} className="contact-item">
+              <Link to={`/contact/${contact.id}`} className="contact-link">
+                {contact.firstName} {contact.lastName}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>No contacts found.</p>
+      )}
     </div>
   );
 }
 
 export default HomeScreen;
+

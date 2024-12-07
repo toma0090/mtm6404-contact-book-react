@@ -8,6 +8,7 @@ function AddContact() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  const [successMessage, setSuccessMessage] = useState(''); 
   const navigate = useNavigate();
 
   const handleAddContact = async (e) => {
@@ -18,15 +19,26 @@ function AddContact() {
         lastName,
         email,
       });
-      navigate('/');
+
+      setFirstName('');
+      setLastName('');
+      setEmail('');
+      setSuccessMessage('Contact added successfully!');
+
+      
+      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
-      console.error('Error adding contact: ', error);
+      console.error('Error adding contact:', error);
     }
   };
 
   return (
     <div className="container">
       <h1>Add Contact</h1>
+      
+   
+      {successMessage && <p className="success-message">{successMessage}</p>}
+
       <form onSubmit={handleAddContact}>
         <div className="input-group">
           <input
@@ -55,7 +67,18 @@ function AddContact() {
             required
           />
         </div>
-        <button type="submit" className="add-button">Add Contact</button>
+
+    
+        <div className="button-group">
+          <button type="submit" className="add-button">Add Contact</button>
+          <button
+            type="button"
+            className="back-button"
+            onClick={() => navigate('/')}
+          >
+            Back to Main Page
+          </button>
+        </div>
       </form>
     </div>
   );

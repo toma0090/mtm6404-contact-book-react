@@ -11,20 +11,31 @@ function ContactDetail() {
 
   useEffect(() => {
     const fetchContact = async () => {
-      const docRef = doc(db, 'contacts', id);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        setContact(docSnap.data());
-      } else {
-        console.log("No such document!");
+      try {
+        const docRef = doc(db, 'contacts', id);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          setContact(docSnap.data());
+        } else {
+          console.error("No such document!");
+          navigate('/');  // Redirect if contact not found
+        }
+      } catch (error) {
+        console.error("Error fetching contact:", error);
       }
     };
     fetchContact();
-  }, [id]);
+  }, [id, navigate]);
 
   const handleDelete = async () => {
-    await deleteDoc(doc(db, 'contacts', id));
-    navigate('/');
+    try {
+      await deleteDoc(doc(db, 'contacts', id));
+      navigate('/');
+    } catch (error) {
+      console.error("Error deleting contact:", error);
+      alert("Failed to delete contact. Please try again.");
+    }
   };
 
   if (!contact) return <div>Loading...</div>;
@@ -36,7 +47,7 @@ function ContactDetail() {
         <p><strong>First Name:</strong> {contact.firstName}</p>
         <p><strong>Last Name:</strong> {contact.lastName}</p>
         <p><strong>Email:</strong> {contact.email}</p>
-        <button className="delete-button" onClick={handleDeleteContact}>Delete Contact</button>
+        <button className="delete-button" onClick={handleDelete}>Delete Contact</button>
         <button className="back-button" onClick={() => navigate('/')}>Back to Home</button>
       </div>
     </div>

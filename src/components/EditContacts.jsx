@@ -11,20 +11,29 @@ function EditContacts() {
     lastName: '',
     email: ''
   });
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchContact = async () => {
-      const docRef = doc(db, 'contacts', id);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        setContact(docSnap.data());
-      } else {
-        console.log("No such document!");
+      try {
+        const docRef = doc(db, 'contacts', id);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setContact(docSnap.data());
+        } else {
+          console.error("No such document!");
+          navigate('/');
+        }
+      } catch (error) {
+        console.error("Error fetching contact:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchContact();
-  }, [id]);
+  }, [id, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,15 +45,27 @@ function EditContacts() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const docRef = doc(db, 'contacts', id);
-    await updateDoc(docRef, contact);
-    navigate(`/contact/${id}`);
+    try {
+      const docRef = doc(db, 'contacts', id);
+      await updateDoc(docRef, contact);
+      navigate(`/contact/${id}`);
+    } catch (error) {
+      console.error("Error updating contact:", error);
+      alert("Failed to update contact. Please try again.");
+    }
   };
 
   const handleDelete = async () => {
-    await deleteDoc(doc(db, 'contacts', id));
-    navigate('/');
+    try {
+      await deleteDoc(doc(db, 'contacts', id));
+      navigate('/');
+    } catch (error) {
+      console.error("Error deleting contact:", error);
+      alert("Failed to delete contact. Please try again.");
+    }
   };
+
+  if (loading) return <p>Loading...</p>;
 
   return (
     <div className="edit-contact-container">
