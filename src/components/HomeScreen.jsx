@@ -11,7 +11,7 @@ function HomeScreen() {
 
   useEffect(() => {
     const fetchContacts = async () => {
-      setLoading(true); // Ensure loading is displayed
+      setLoading(true); 
       try {
         const contactsCollection = collection(db, 'contacts');
         const contactsSnapshot = await getDocs(contactsCollection);
@@ -19,13 +19,13 @@ function HomeScreen() {
         if (!contactsSnapshot.empty) {
           const contactsList = contactsSnapshot.docs.map((doc) => ({
             id: doc.id,
-            firstName: doc.data()['firstName'], // Match Firestore field names
+            firstName: doc.data()['firstName'],
             lastName: doc.data()['lastname'],
-            email: doc.data()['email'], // Match Firestore field names
+            email: doc.data()['email'], 
             phoneNumber: doc.data()['phoneNumber'] || 'N/A',
           }));
 
-          // Sort contacts by last name
+          
           contactsList.sort((a, b) =>
             (a.lastName || '').localeCompare(b.lastName || '')
           );
@@ -38,7 +38,7 @@ function HomeScreen() {
       } catch (error) {
         console.error('Error fetching contacts from Firestore:', error);
       } finally {
-        setLoading(false); // Hide loading indicator
+        setLoading(false); 
       }
     };
 
